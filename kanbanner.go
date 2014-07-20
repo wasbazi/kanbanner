@@ -1,35 +1,46 @@
 package main
 
 import (
- "encoding/json"
- "fmt"
- "log"
- "io/ioutil"
- "net/http"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Story struct {
-  Title string
-  Body []byte
+	Title string
+	Body  string
 }
 
-func (p *Story) save() error {
-    filename := p.Title + ".txt"
-    return ioutil.WriteFile(filename, p.Body, 0600)
+func save(p *Story) error {
+	return errors.New("Not Implemented")
 }
 
-func loadStory(title string) (*Story, error) {
-    filename := title + ".txt"
-    body, err := ioutil.ReadFile(filename)
+func loadStory(id string) (*Story, error) {
+	db := getDB()
 
-    if err != nil {
-     return nil, err
-    }
+	var title string
+	var body string
+	// this may be ripe for SQL injections, ignore because SQL injections are for noobs
+	err := db.QueryRow("select title, body from story where id = ?", id).Scan(&title, &body)
 
-    return &Story{Title: title, Body: body}, nil
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Story{Title: title, Body: body}, nil
+}
+
+func editStory(id string) (*Story, error) {
+	return nil, errors.New("editStory not implemented")
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
+	// id := r.URL.Path[len("/view/"):]
 	story := new(Story)
 	err := json.NewDecoder(r.Body).Decode(story)
 	if err != nil {
@@ -39,14 +50,36 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-    title := r.URL.Path[len("/view/"):]
-    s, _ := loadStory(title)
-    fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", s.Title, s.Body)
+	id := r.URL.Path[len("/view/"):]
+	s, _ := loadStory(id)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", s.Title, s.Body)
+}
+
+var db *sql.DB
+
+func getDB() *sql.DB {
+	if db != nil {
+		return db
+	}
+
+	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/hello")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		// do something here
+	}
+
+	return db
+	// defer db.Close()
 }
 
 func main() {
-    http.HandleFunc("/view/", viewHandler)
-    http.HandleFunc("/edit/", editHandler)
-    // http.HandleFunc("/save/", saveHandler)
-    http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/view/", viewHandler)
+	http.HandleFunc("/edit/", editHandler)
+	// http.HandleFunc("/save/", saveHandler)
+	http.ListenAndServe(":8080", nil)
 }
