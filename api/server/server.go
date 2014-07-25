@@ -1,42 +1,52 @@
 package server
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
-	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/wasbazi/kanbanner/db"
 )
 
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/edit/"):]
+func EditHandler(c *gin.Context) {
+	id := c.Params.ByName("id")
+	var story db.Story
 
-	story := new(db.Story)
-	err := json.NewDecoder(r.Body).Decode(story)
-	if err != nil {
-		log.Println(err)
+	if c.EnsureBody(&story) {
+		db.EditStory(id, story)
+		story, err := db.LoadStory(id)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.JSON(200, story)
 	}
 
-	db.EditStory(id)
-	story, err = db.LoadStory(id)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", story.Title, story.Body)
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/view/"):]
-	s, _ := db.LoadStory(id)
-	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", s.Title, s.Body)
+func ViewHandler(c *gin.Context) {
+	id := c.Params.ByName("id")
+	story, _ := db.LoadStory(id)
+
+	c.JSON(200, story)
+}
+
+func ViewAllHandler(c *gin.Context) {
+	stories, _ := db.LoadStories()
+
+	c.JSON(200, stories)
 }
 
 func AcceptConnections() {
-	http.HandleFunc("/view/", viewHandler)
-	http.HandleFunc("/edit/", editHandler)
-	// http.HandleFunc("/save/", saveHandler)
-	http.ListenAndServe(":8080", nil)
+	r := gin.Default()
+	r.GET("/stories", ViewAllHandler)
+	r.GET("/story/:id", ViewHandler)
+	r.POST("/story/:id", EditHandler)
+
+	r.Run(":8080")
+
+	// http.HandleFunc("/view/", viewHandler)
+	// http.HandleFunc("/edit/", editHandler)
+	// // http.HandleFunc("/save/", saveHandler)
+	// http.ListenAndServe(":8080", nil)
 }
