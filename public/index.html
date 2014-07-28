@@ -1,0 +1,15 @@
+<!doctype html>
+<html ng-app="kanbanApp">
+  <head>
+    <script src="/javascript/angular.min.js"></script>
+    <script src="/javascript/kanban.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="board" ng-controller="KanbanController">
+      <div ng-controller="StoryListCtrl" class="pending story-column"></div>
+      <div class="active story-column"></div>
+      <div class="completed story-column"></div>
+    </div>
+  </body>
+</html>

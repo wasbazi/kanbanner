@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/wasbazi/kanbanner/db"
@@ -37,16 +38,19 @@ func ViewAllHandler(c *gin.Context) {
 	c.JSON(200, stories)
 }
 
+func IndexHandler(c *gin.Context) {
+	fileServer := http.FileServer(http.Dir("./public"))
+	fileServer.ServeHTTP(c.Writer, c.Request)
+}
 func AcceptConnections() {
 	r := gin.Default()
 	r.GET("/stories", ViewAllHandler)
 	r.GET("/story/:id", ViewHandler)
 	r.POST("/story/:id", EditHandler)
 
-	r.Run(":8080")
+	r.GET("/", IndexHandler)
+	r.Static("/javascript", "./public/javascript/")
+	r.Static("/css", "./public/css/")
 
-	// http.HandleFunc("/view/", viewHandler)
-	// http.HandleFunc("/edit/", editHandler)
-	// // http.HandleFunc("/save/", saveHandler)
-	// http.ListenAndServe(":8080", nil)
+	r.Run(":8080")
 }

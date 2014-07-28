@@ -1,0 +1,19 @@
+html, body, .board {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.story-column {
+  width: 30%;
+  display: inline-block;
+  height: 100%;
+  background: green;
+  vertical-align: top;
+}
+
+.story {
+  border-radius: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+}
