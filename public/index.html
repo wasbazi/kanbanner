@@ -7,9 +7,15 @@
   </head>
   <body>
     <div class="board" ng-controller="KanbanController">
-      <div ng-controller="StoryListCtrl" class="pending story-column"></div>
-      <div class="active story-column"></div>
-      <div class="completed story-column"></div>
+      <div ng-controller="StoryListCtrl">
+        <div ng-repeat="(state, value) in stories" class="story-column {{ state }}" droppable>
+          <h1 class="column-name">{{ state }}</h1>
+          <div class="story" ng-repeat="story in value" draggable>
+            <h3 class="title">{{ story.title }}</h3>
+            <div class="body">{{ story.body }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

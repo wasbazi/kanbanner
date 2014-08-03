@@ -1,4 +1,4 @@
-html, body, .board {
+html, body, .board, .board > div{
   height: 100%;
   margin: 0;
   padding: 0;
@@ -8,12 +8,22 @@ html, body, .board {
   width: 30%;
   display: inline-block;
   height: 100%;
-  background: green;
+  border-left: 3px solid rgba(0,0,0,.15);
+  padding: 10px;
   vertical-align: top;
+}
+
+.story-column:first-child {
+  border-left: 0;
 }
 
 .story {
   border-radius: 10px;
-  padding: 5px;
+  padding: 10px;
+  margin: 10px;
   border: 1px solid #ccc;
+}
+
+.story h3{
+  margin: 5px 0 10px;
 }

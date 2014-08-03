@@ -8,42 +8,37 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	Pending   = "pending"
-	Progress  = "progress"
-	Completed = "completed"
-)
-
 type Story struct {
 	Title    string `json:"title" bind:"required"`
 	Body     string `json:"body" bind:"required"`
 	Created  time.Time
 	Modified time.Time
-	// State    State
+	State    string
 }
 
-func LoadStories() ([]*Story, error) {
+func LoadStories() (map[string][]*Story, error) {
 	db := GetDB()
 
 	// this may be ripe for SQL injections, ignore because SQL injections are for noobs
-	rows, err := db.Query("select title, body from story")
+	rows, err := db.Query("select title, body, state from story")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	stories := make([]*Story, 0, 0)
+	stories := make(map[string][]*Story)
 
 	defer rows.Close()
 	for rows.Next() {
 		var title string
 		var body string
+		var state string
 
-		if err := rows.Scan(&title, &body); err != nil {
+		if err := rows.Scan(&title, &body, &state); err != nil {
 			log.Fatal(err)
 		}
-		story := &Story{Title: title, Body: body}
-		stories = append(stories, story)
+		story := &Story{Title: title, Body: body, State: state}
+		stories[story.State] = append(stories[story.State], story)
 	}
 
 	return stories, nil
