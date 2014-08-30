@@ -2,7 +2,9 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,6 +16,35 @@ type Story struct {
 	Created  time.Time
 	Modified time.Time
 	State    string
+}
+
+func Init(db *sql.DB) {
+	row := db.QueryRow("SHOW TABLES LIKE 'story'")
+	var result string
+	row.Scan(&result)
+
+	if result == "story" {
+		return
+	}
+
+	tableDefinition := "CREATE TABLE `story` ( " +
+		"`id` int(11) NOT NULL AUTO_INCREMENT," +
+		"`title` varchar(255) DEFAULT NULL," +
+		"`body` longtext," +
+		"`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP," +
+		"`modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+		"`state` enum('pending','progress','completed') DEFAULT NULL," +
+		"PRIMARY KEY (`id`)" +
+		")"
+
+	_, err := db.Exec(tableDefinition)
+
+	if err != nil {
+		fmt.Println("Error creating table story")
+		os.Exit(1)
+	}
+
+	fmt.Println("Created table story")
 }
 
 func LoadStories() (map[string][]*Story, error) {
@@ -79,6 +110,7 @@ func GetDB() *sql.DB {
 	}
 
 	db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/hello")
+	Init(db)
 
 	if err != nil {
 		log.Fatal(err)
@@ -86,7 +118,8 @@ func GetDB() *sql.DB {
 
 	err = db.Ping()
 	if err != nil {
-		// do something here
+		fmt.Println("Cannot connect to MySQL server")
+		os.Exit(1)
 	}
 
 	return db

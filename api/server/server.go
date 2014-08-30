@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -42,7 +43,10 @@ func IndexHandler(c *gin.Context) {
 	fileServer := http.FileServer(http.Dir("./public"))
 	fileServer.ServeHTTP(c.Writer, c.Request)
 }
+
 func AcceptConnections() {
+	db.GetDB()
+
 	r := gin.Default()
 	r.GET("/stories", ViewAllHandler)
 	r.GET("/story/:id", ViewHandler)
@@ -52,5 +56,7 @@ func AcceptConnections() {
 	r.Static("/javascript", "./public/javascript/")
 	r.Static("/css", "./public/css/")
 
-	r.Run(":8080")
+	port := ":8090"
+	fmt.Printf("Running on %s", port)
+	r.Run(port)
 }
