@@ -8,9 +8,9 @@
   <body>
     <div class="board" ng-controller="KanbanController">
       <div ng-controller="StoryListCtrl">
-        <div ng-repeat="(state, value) in stories" class="story-column {{ state }}" droppable>
-          <h1 class="column-name">{{ state }}</h1>
-          <div class="story" ng-repeat="story in value" draggable>
+        <div ng-repeat="state in states" class="story-column {{ state }}" droppable>
+          <h1 class="column-name">{{ state.name }}</h1>
+          <div class="story" ng-repeat="story in stories[state.name]" draggable>
             <h3 class="title">{{ story.title }}</h3>
             <div class="body">{{ story.body }}</div>
           </div>
