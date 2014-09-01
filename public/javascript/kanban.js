@@ -22,11 +22,11 @@ app.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", funct
     })
 
     var story = stories.splice(idx, 1)[0]
-    story.state = args.state
-    $scope.stories[args.state].push(story)
+    story.state = args.state.id
+    $scope.stories[args.state.name].push(story)
     $scope.$apply()
 
-    Story.update(story)
+    Story.update(story, args.state)
   })
 }])
 
@@ -57,11 +57,11 @@ app.service("Story", ["$rootScope", "$http", function($rootScope, $http){
 
   return service
 
-  function updateStory(story){
+  function updateStory(story, state){
     console.log("story", story.state)
     $http.post("/story/" + story.id, story).success(function(data){
       console.log('response', data)
-      if(story.state != data.state){
+      if(state.name != data.state){
         console.error("state not updated")
       }
     })
@@ -78,7 +78,7 @@ app.directive("draggable", function(){
     el.addEventListener("dragstart", function(e){
       e.dataTransfer.effectAllowed = "move"
       e.dataTransfer.setData("Title", story.title)
-      e.dataTransfer.setData("State", scope.$parent.state)
+      e.dataTransfer.setData("State", scope.$parent.state.name)
       this.classList.add("drag")
       return false
     }, false)

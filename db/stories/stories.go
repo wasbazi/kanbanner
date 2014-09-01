@@ -1,6 +1,7 @@
 package stories
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -22,7 +23,7 @@ func LoadStories() (map[string][]*Story, error) {
 	conn := db.GetDB()
 
 	// this may be ripe for SQL injections, ignore because SQL injections are for noobs
-	rows, err := conn.Query("select title, body, state, id from stories")
+	rows, err := conn.Query("select title, body, states.name state, stories.id from stories RIGHT JOIN states on state = states.id")
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,16 +33,21 @@ func LoadStories() (map[string][]*Story, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var title string
-		var body string
-		var state string
-		var id string
+		var title sql.NullString
+		var body sql.NullString
+		var state sql.NullString
+		var id sql.NullString
 
 		if err := rows.Scan(&title, &body, &state, &id); err != nil {
 			log.Fatal(err)
 		}
-		story := &Story{Title: title, Body: body, State: state, Id: id}
-		stories[story.State] = append(stories[story.State], story)
+
+		if id.Valid {
+			story := &Story{Title: title.String, Body: body.String, State: state.String, Id: id.String}
+			stories[story.State] = append(stories[story.State], story)
+		} else {
+			stories[state.String] = make([]*Story, 0, 0)
+		}
 	}
 
 	return stories, nil
@@ -54,7 +60,7 @@ func LoadStory(id string) (*Story, error) {
 	var body string
 	var state string
 	// this may be ripe for SQL injections, ignore because SQL injections are for noobs
-	err := conn.QueryRow("select title, body, state from stories where id = ?", id).Scan(&title, &body, &state)
+	err := conn.QueryRow("select title, body, states.name state from stories LEFT JOIN states on state = states.id where stories.id = ?", id).Scan(&title, &body, &state)
 
 	if err != nil {
 		log.Fatal(err)
