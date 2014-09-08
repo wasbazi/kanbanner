@@ -21,7 +21,7 @@ func CreateStories(db *sql.DB) {
 		"`body` longtext," +
 		"`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP," +
 		"`modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"`state` INT, " +
+		"`state` INT DEFAULT 1, " +
 		"FOREIGN KEY (state) REFERENCES states(id) ON DELETE CASCADE," +
 		"PRIMARY KEY (`id`)" +
 		")"

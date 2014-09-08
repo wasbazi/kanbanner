@@ -2,8 +2,10 @@ package stories
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,6 +19,38 @@ type Story struct {
 	Created  time.Time `json:"created" bind:"require"`
 	Modified time.Time `json:"modified" bind:"require"`
 	State    string    `json:"state" bind:"state"`
+}
+
+func CreateStory(title, body string) (string, error) {
+	conn := db.GetDB()
+
+	result, err := conn.Exec("insert into stories (title, body) values (?, ?)", title, body)
+
+	if err != nil {
+		return "", err
+	}
+
+	id, err := result.LastInsertId()
+	strId := strconv.FormatInt(id, 10)
+
+	return strId, err
+}
+
+func DeleteStory(id string) error {
+	conn := db.GetDB()
+
+	result, err := conn.Exec("delete from stories where id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+
+	if affected != 1 || err != nil {
+		return errors.New("Unexpected rows affected")
+	}
+
+	return nil
 }
 
 func LoadStories() (map[string][]*Story, error) {
