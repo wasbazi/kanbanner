@@ -1,0 +1,5 @@
+<h1 class="column-name">{{ state.name }}</h1>
+<div class="story" ng-repeat="story in stories[state.name]" draggable>
+  <h3 class="title">{{ story.title }}</h3>
+  <div class="body">{{ story.body }}</div>
+</div>
