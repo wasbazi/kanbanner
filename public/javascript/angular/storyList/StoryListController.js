@@ -1,4 +1,4 @@
-var mod = angular.module("storyList", ["story.services", "story.directives", "state.services"])
+var mod = angular.module("storyList", ["storyList.directives", "story.services", "story.directives", "state.services"])
 
 mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", function($scope, $rootScope, Story, State){
   $scope.$on("states.update", function(){

@@ -1,5 +1,14 @@
 var mod = angular.module("story.directives", [])
 
+mod.directive("storyView", function() {
+  return {
+    restrict: 'A',
+    templateUrl: 'javascript/angular/story/StoryView.html',
+    scope: true,
+    transclude : false
+  };
+});
+
 mod.directive("draggable", function(){
   return function(scope, element){
     var el = element[0]

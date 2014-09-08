@@ -20,6 +20,15 @@ mod.service("State", ["$rootScope", "$http", function($rootScope, $http){
 
 var mod = angular.module("story.directives", [])
 
+mod.directive("storyView", function() {
+  return {
+    restrict: 'A',
+    templateUrl: 'javascript/angular/story/StoryView.html',
+    scope: true,
+    transclude : false
+  };
+});
+
 mod.directive("draggable", function(){
   return function(scope, element){
     var el = element[0]
@@ -104,7 +113,7 @@ mod.service("Story", ["$rootScope", "$http", function($rootScope, $http){
   }
 }])
 
-var mod = angular.module("storyList", ["story.services", "story.directives", "state.services"])
+var mod = angular.module("storyList", ["storyList.directives", "story.services", "story.directives", "state.services"])
 
 mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", function($scope, $rootScope, Story, State){
   $scope.$on("states.update", function(){
@@ -133,3 +142,15 @@ mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", funct
     Story.update(story, args.state)
   })
 }])
+
+var mod = angular.module("storyList.directives", [])
+
+mod.directive("storyListView", function() {
+  return {
+    restrict: 'A',
+    templateUrl: 'javascript/angular/storyList/StoryListView.html',
+    replace: true,
+    scope: true,
+    transclude: true
+  };
+});
