@@ -1,4 +1,4 @@
-var mod = angular.module("story.directives", []) //["story.controller"])
+var mod = angular.module("story.directives", [])
 
 mod.directive("storyView", function() {
   return {

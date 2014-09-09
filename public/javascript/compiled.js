@@ -18,27 +18,7 @@ mod.service("State", ["$rootScope", "$http", function($rootScope, $http){
   return service
 }])
 
-var mod = angular.module("story.controller", ["story.services", "story.directives", "state.services"])
-
-mod.controller("StoryCtrl", ["$scope", "$rootScope", "Story", function($scope, $rootScope, Story){
-  $scope.$on("story.move", function(event, args){
-    var idx = null
-    var stories = $scope.stories[args.prev]
-
-    stories.forEach(function(item, i){
-      if(item.title == args.title) return idx = i
-    })
-
-    var story = stories.splice(idx, 1)[0]
-    story.state = args.state.id
-    $scope.stories[args.state.name].push(story)
-    $scope.$apply()
-
-    Story.update(story, args.state)
-  })
-}])
-
-var mod = angular.module("story.directives", []) //["story.controller"])
+var mod = angular.module("story.directives", [])
 
 mod.directive("storyView", function() {
   return {
@@ -109,9 +89,26 @@ mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", funct
     $scope.stories = Story.stories
     console.log('stories.update', $scope.stories)
   })
+
+  $scope.$on("story.move", function(event, args){
+    console.log('$on fired')
+    var idx = null
+    var stories = $scope.stories[args.prev]
+
+    stories.forEach(function(item, i){
+      if(item.title == args.title) return idx = i
+    })
+
+    var story = stories.splice(idx, 1)[0]
+    story.state = args.state.id
+    $scope.stories[args.state.name].push(story)
+    $scope.$apply()
+
+    Story.update(story, args.state)
+  })
 }])
 
-var mod = angular.module("storyList.directives", ["story.controller"])
+var mod = angular.module("storyList.directives", ["story.directives"])
 
 mod.directive("storyListView", function() {
   return {
@@ -158,6 +155,7 @@ mod.directive("droppable", ["$rootScope", function($rootScope) {
       }
 
       var args = { title: title, prev: state, state: scope.state }
+      console.log('broadcasted')
       $rootScope.$broadcast("story.move", args)
       return false;
     }, false)

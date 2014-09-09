@@ -1,4 +1,4 @@
-var mod = angular.module("storyList.directives", ["story.controller"])
+var mod = angular.module("storyList.directives", ["story.directives"])
 
 mod.directive("storyListView", function() {
   return {
@@ -45,6 +45,7 @@ mod.directive("droppable", ["$rootScope", function($rootScope) {
       }
 
       var args = { title: title, prev: state, state: scope.state }
+      console.log('broadcasted')
       $rootScope.$broadcast("story.move", args)
       return false;
     }, false)
