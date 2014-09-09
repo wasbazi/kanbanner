@@ -1,4 +1,4 @@
-var app = angular.module("kanbanApp", ["storyList"])
+var app = angular.module("kanbanApp", ["storyList.controller"])
 
 app.controller("KanbanController", [function() {}]);
 
@@ -18,11 +18,31 @@ mod.service("State", ["$rootScope", "$http", function($rootScope, $http){
   return service
 }])
 
-var mod = angular.module("story.directives", [])
+var mod = angular.module("story.controller", ["story.services", "story.directives", "state.services"])
+
+mod.controller("StoryCtrl", ["$scope", "$rootScope", "Story", function($scope, $rootScope, Story){
+  $scope.$on("story.move", function(event, args){
+    var idx = null
+    var stories = $scope.stories[args.prev]
+
+    stories.forEach(function(item, i){
+      if(item.title == args.title) return idx = i
+    })
+
+    var story = stories.splice(idx, 1)[0]
+    story.state = args.state.id
+    $scope.stories[args.state.name].push(story)
+    $scope.$apply()
+
+    Story.update(story, args.state)
+  })
+}])
+
+var mod = angular.module("story.directives", []) //["story.controller"])
 
 mod.directive("storyView", function() {
   return {
-    restrict: 'A',
+    restrict: 'E',
     templateUrl: 'javascript/angular/story/StoryView.html',
     scope: true,
     transclude : false
@@ -45,6 +65,63 @@ mod.directive("draggable", function(){
     }, false)
   }
 })
+
+var mod = angular.module("story.services", [])
+
+mod.service("Story", ["$rootScope", "$http", function($rootScope, $http){
+  var service = {
+    stories: {},
+    update: updateStory,
+    remove: deleteStory
+  }
+
+  $http.get("/stories").success(function(data){
+    service.stories = data
+    $rootScope.$broadcast("stories.update")
+  })
+
+  return service
+
+  function updateStory(story, state){
+    $http.post("/stories/" + story.id, story).success(function(data){
+      if(state.name != data.state){
+        console.error("state not updated")
+      }
+    })
+  }
+
+  function deleteStory(id){
+    $http.delete("/stories/" + id).success(function(){
+      console.log(arguments)
+    })
+  }
+}])
+
+var mod = angular.module("storyList.controller", ["storyList.directives", "story.services", "state.services"])
+
+mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", function($scope, $rootScope, Story, State){
+  $scope.$on("states.update", function(){
+    $scope.states = State.states
+    console.log('states.update', $scope.states)
+  })
+
+  $scope.$on("stories.update", function(){
+    $scope.stories = Story.stories
+    console.log('stories.update', $scope.stories)
+  })
+}])
+
+var mod = angular.module("storyList.directives", ["story.controller"])
+
+mod.directive("storyListView", function() {
+  return {
+    restrict: 'E',
+    templateUrl: 'javascript/angular/storyList/StoryListView.html',
+    replace: true,
+    scope: true,
+    transclude: true
+  };
+});
 
 mod.directive("droppable", ["$rootScope", function($rootScope) {
   return function(scope, element) {
@@ -86,71 +163,3 @@ mod.directive("droppable", ["$rootScope", function($rootScope) {
     }, false)
   }
 }])
-
-var mod = angular.module("story.services", [])
-
-mod.service("Story", ["$rootScope", "$http", function($rootScope, $http){
-  var service = {
-    stories: {},
-    update: updateStory
-  }
-
-  $http.get("/stories").success(function(data){
-    service.stories = data
-    $rootScope.$broadcast("stories.update")
-  })
-
-  return service
-
-  function updateStory(story, state){
-    console.log("story", story.state)
-    $http.post("/stories/" + story.id, story).success(function(data){
-      console.log('response', data)
-      if(state.name != data.state){
-        console.error("state not updated")
-      }
-    })
-  }
-}])
-
-var mod = angular.module("storyList", ["storyList.directives", "story.services", "story.directives", "state.services"])
-
-mod.controller("StoryListCtrl", ["$scope", "$rootScope", "Story", "State", function($scope, $rootScope, Story, State){
-  $scope.$on("states.update", function(){
-    $scope.states = State.states
-    console.log('states.update', $scope.states)
-  })
-
-  $scope.$on("stories.update", function(){
-    $scope.stories = Story.stories
-    console.log('stories.update', $scope.stories)
-  })
-
-  $scope.$on("story.move", function(event, args){
-    var idx = null
-    var stories = $scope.stories[args.prev]
-
-    stories.forEach(function(item, i){
-      if(item.title == args.title) return idx = i
-    })
-
-    var story = stories.splice(idx, 1)[0]
-    story.state = args.state.id
-    $scope.stories[args.state.name].push(story)
-    $scope.$apply()
-
-    Story.update(story, args.state)
-  })
-}])
-
-var mod = angular.module("storyList.directives", [])
-
-mod.directive("storyListView", function() {
-  return {
-    restrict: 'A',
-    templateUrl: 'javascript/angular/storyList/StoryListView.html',
-    replace: true,
-    scope: true,
-    transclude: true
-  };
-});
